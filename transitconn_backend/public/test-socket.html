@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Socket TransitConn</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+  <h2>Test Socket.io — TransitConn</h2>
+
+  <button onclick="connecter()">Se connecter</button>
+  <button onclick="rejoindreRoom()">Rejoindre fret</button>
+  <button onclick="envoyerMessage()">Envoyer message</button>
+
+  <div id="logs" style="margin-top:20px; font-family:monospace;"></div>
+
+  <script>
+    let socket;
+
+    // Ton token JWT — remplace par le tien
+    const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlYjdiYjY0MC1mYWYzLTQ4M2EtYjZhOS1kODM1ZjUzZDllZGUiLCJyb2xlIjoiVFJBTlNJVEFJUkUiLCJpYXQiOjE3NzUwMDE0NzIsImV4cCI6MTc3NTYwNjI3Mn0.sDi8363lmH1XqXO4V_GelygPFkVL1VItdJRf4I-cTrk";
+    const FRET_ID = "04d028df-bf50-46ca-a6c9-2024e81e5dd3";
+
+    function log(msg) {
+      document.getElementById('logs').innerHTML +=
+        `<p>➜ ${msg}</p>`;
+    }
+
+    function connecter() {
+      socket = io('http://localhost:5000', {
+        auth: { token: TOKEN },
+        transports: ['websocket']
+      });
+
+      socket.on('connect', () => {
+        log('Connecté ! Socket ID: ' + socket.id);
+      });
+
+      socket.on('new_message', (data) => {
+        log('Message reçu: ' + JSON.stringify(data));
+      });
+
+      socket.on('new_notification', (data) => {
+        log('Notification: ' + data.message);
+      });
+
+      socket.on('connect_error', (err) => {
+        log('Erreur: ' + err.message);
+      });
+    }
+
+    function rejoindreRoom() {
+      socket.emit('join_fret', FRET_ID);
+      log('Rejoint la room du fret: ' + FRET_ID);
+    }
+
+    function envoyerMessage() {
+      socket.emit('send_message', {
+        fretId: FRET_ID,
+        message: 'Bonjour, le fret est prêt !'
+      });
+      log('Message envoyé');
+    }
+  </script>
+</body>
+</html>
